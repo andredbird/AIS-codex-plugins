@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "revision": 1,
+  "goal": { "id": "GOAL-001", "text": "Produce an implementation-ready technical plan." },
+  "requirements": [
+    { "id": "REQ-001", "text": "Every task must be independently verifiable.", "provenance": "user-message" }
+  ],
+  "success_criteria": [],
+  "constraints": [],
+  "out_of_scope": [],
+  "decisions": []
+}

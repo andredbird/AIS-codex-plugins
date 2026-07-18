@@ -1,0 +1,10 @@
+{
+  "review_model": "explicit-model-id",
+  "reasoning_effort": "high",
+  "blocking_threshold": "major",
+  "max_revisions": 1,
+  "max_model_calls": 4,
+  "plan_size_limit": 65536,
+  "repo_snapshot_limit": 134217728,
+  "keep_report": false
+}

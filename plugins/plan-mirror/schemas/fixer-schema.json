@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["base_plan_hash", "addresses", "candidate_markdown"],
+  "properties": {
+    "base_plan_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "addresses": { "type": "array", "items": { "type": "string", "pattern": "^finding-[0-9]{3,}$" } },
+    "candidate_markdown": { "type": "string", "minLength": 1 }
+  }
+}

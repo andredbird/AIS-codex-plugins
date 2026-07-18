@@ -1,0 +1,33 @@
+{
+  "name": "plan-mirror",
+  "version": "0.1.0+codex.20260718134132",
+  "description": "Blindly review, improve, and re-review technical plans against a confirmed project contract.",
+  "author": {
+    "name": "Andrey"
+  },
+  "homepage": "https://github.com/andredbird/AIS-codex-plugins/tree/main/plugins/plan-mirror",
+  "repository": "https://github.com/andredbird/AIS-codex-plugins",
+  "license": "MIT",
+  "keywords": [
+    "planning",
+    "review",
+    "architecture",
+    "evidence"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Plan Mirror",
+    "shortDescription": "Blind technical plan review with one safe revision.",
+    "longDescription": "Reviews a plan against a confirmed contract, optionally verifies an immutable repository snapshot, produces one improved candidate, and runs a fresh blind final review.",
+    "developerName": "Andrey",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "defaultPrompt": [
+      "Review PLAN.md against a confirmed contract.",
+      "Check whether Plan Mirror can run safely."
+    ]
+  }
+}

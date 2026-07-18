@@ -1,0 +1,20 @@
+{
+  "name": "andrey-codex",
+  "interface": {
+    "displayName": "Andrey Codex"
+  },
+  "plugins": [
+    {
+      "name": "plan-mirror",
+      "source": {
+        "source": "local",
+        "path": "./plugins/plan-mirror"
+      },
+      "policy": {
+        "installation": "INSTALLED_BY_DEFAULT",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

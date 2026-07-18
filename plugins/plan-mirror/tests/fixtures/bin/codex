@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+import { readFileSync, writeFileSync } from 'node:fs';
+
+const args = process.argv.slice(2);
+const output = args[args.indexOf('--output-last-message') + 1];
+const schema = args[args.indexOf('--output-schema') + 1];
+const prompt = readFileSync(0, 'utf8');
+const risks = [
+  'RISK-ARCHITECTURE', 'RISK-DEPENDENCIES', 'RISK-DATA', 'RISK-CONCURRENCY',
+  'RISK-OPERATIONS', 'RISK-VERIFICATION', 'RISK-SCOPE', 'RISK-EXECUTION'
+];
+let response;
+if (schema.endsWith('fixer-schema.json')) {
+  const hash = prompt.match(/Exact base plan SHA-256: ([a-f0-9]{64})/)[1];
+  response = {
+    base_plan_hash: hash,
+    addresses: ['finding-001'],
+    candidate_markdown: '# Candidate\n\nREQ-001\n\n### TASK-001 — Implement safely\n\nRequirements: REQ-001\n\nDepends on: none\n\nFiles/interfaces:\n- src/example.js\n\nImplementation:\n- Implement the requirement.\n\nVerification:\n- npm test\n\nExpected result:\n- Tests pass.\n\nDone when:\n- REQ-001 is verified.\n'
+  };
+} else {
+  const final = prompt.includes('### TASK-001');
+  response = {
+    summary: final ? 'clean candidate' : 'base plan needs work',
+    coverage: ['REQ-001', ...risks].map((subject_id) => ({ subject_id, status: 'supported', method: 'plan-check', rationale: 'checked', evidence_refs: [] })),
+    findings: final ? [] : [{
+      id: 'finding-001', severity: 'major', category: 'verification', normative_ids: ['REQ-001'],
+      plan_location: 'Plan', evidence_refs: [], problem: 'No executable task.', causal_mechanism: 'Implementation cannot be verified.',
+      minimal_fix: 'Add an independently verifiable task.', confidence: 'high', requires_user_decision: false
+    }]
+  };
+}
+writeFileSync(output, `${JSON.stringify(response)}\n`);
+process.stdout.write(`${JSON.stringify({ type: 'turn.completed', usage: { input_tokens: 10, output_tokens: 10 } })}\n`);

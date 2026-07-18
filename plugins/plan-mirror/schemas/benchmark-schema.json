@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "repeats", "variants", "cases"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "repeats": { "type": "integer", "minimum": 1 },
+    "variants": {
+      "type": "object",
+      "required": ["call_matched_self", "fresh_critic", "full_cycle"],
+      "properties": {
+        "call_matched_self": { "type": "string" },
+        "fresh_critic": { "type": "string" },
+        "full_cycle": { "type": "string" }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "clean_control", "known_blocker_ids", "runs"],
+        "properties": {
+          "id": { "type": "string" },
+          "clean_control": { "type": "boolean" },
+          "known_blocker_ids": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+          "runs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["variant", "repeat", "findings", "residual_blockers", "regressions", "requirement_retention", "human_attention_minutes", "calls", "tokens", "duration_ms", "source_plan_changed"],
+              "properties": {
+                "variant": { "type": "string" },
+                "repeat": { "type": "integer", "minimum": 1 },
+                "findings": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["severity", "oracle_id"],
+                    "properties": {
+                      "severity": { "enum": ["critical", "major", "minor", "nit"] },
+                      "oracle_id": { "type": ["string", "null"] }
+                    }
+                  }
+                },
+                "residual_blockers": { "type": "integer", "minimum": 0 },
+                "regressions": { "type": "integer", "minimum": 0 },
+                "requirement_retention": { "type": "number", "minimum": 0, "maximum": 1 },
+                "human_attention_minutes": { "type": "number", "minimum": 0 },
+                "calls": { "type": "integer", "minimum": 0 },
+                "tokens": { "type": "integer", "minimum": 0 },
+                "duration_ms": { "type": "integer", "minimum": 0 },
+                "source_plan_changed": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

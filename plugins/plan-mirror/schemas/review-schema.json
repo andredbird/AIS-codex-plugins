@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "coverage", "findings"],
+  "properties": {
+    "summary": { "type": "string" },
+    "coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["subject_id", "status", "method", "rationale", "evidence_refs"],
+        "properties": {
+          "subject_id": { "type": "string" },
+          "status": { "enum": ["supported", "contradicted", "insufficient_evidence", "not_applicable"] },
+          "method": { "enum": ["plan-check", "contract-check", "repo-check"] },
+          "rationale": { "type": "string" },
+          "evidence_refs": { "type": "array", "items": { "type": "string", "pattern": "^ev-[a-f0-9]{16}$" } }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "category", "normative_ids", "plan_location", "evidence_refs", "problem", "causal_mechanism", "minimal_fix", "confidence", "requires_user_decision"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^finding-[0-9]{3,}$" },
+          "severity": { "enum": ["critical", "major", "minor", "nit"] },
+          "category": { "type": "string" },
+          "normative_ids": { "type": "array", "items": { "type": "string" } },
+          "plan_location": { "type": "string" },
+          "evidence_refs": { "type": "array", "items": { "type": "string", "pattern": "^ev-[a-f0-9]{16}$" } },
+          "problem": { "type": "string" },
+          "causal_mechanism": { "type": "string" },
+          "minimal_fix": { "type": "string" },
+          "confidence": { "enum": ["low", "medium", "high"] },
+          "requires_user_decision": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

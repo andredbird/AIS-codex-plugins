@@ -1,0 +1,16 @@
+{
+  "name": "@andrey-codex/plan-mirror",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Evidence-bounded blind review and one-revision workflow for technical plans",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "review": "node scripts/plan-mirror.mjs review",
+    "doctor": "node scripts/plan-mirror.mjs doctor",
+    "benchmark": "node scripts/benchmark.mjs",
+    "test": "node --test",
+    "check": "node --check scripts/plan-mirror.mjs && node --test"
+  },
+  "license": "MIT"
+}

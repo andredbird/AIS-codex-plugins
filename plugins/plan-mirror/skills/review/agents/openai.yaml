@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Plan"
+  short_description: "Blindly review and improve a technical plan"
+  default_prompt: "Use $plan-mirror:review to review and improve this technical plan."

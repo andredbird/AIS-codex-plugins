@@ -1,0 +1,11 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+coverage/
+.plan-mirror/
+.plan-mirror.json
+*.log
+*.pem
+*.key
