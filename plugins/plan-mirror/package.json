@@ -1,6 +1,6 @@
 {
   "name": "@andrey-codex/plan-mirror",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Evidence-bounded blind review and one-revision workflow for technical plans",

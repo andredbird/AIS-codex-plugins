@@ -1,38 +1,52 @@
-# Plan Mirror Practical
+# Plan Mirror
 
-Plan Mirror performs an evidence-bounded technical-plan review:
+[English](#english) · [Русский](#русский)
 
-```text
-confirmed contract -> fresh Critic -> one Fixer -> fresh blind Critic
+## English
+
+### What it does
+
+Plan Mirror audits a technical implementation plan against a confirmed project contract. It finds blocking problems, may produce one complete improved candidate, and asks a fresh blind Critic to review that candidate independently.
+
+It checks requirements coverage, architecture, dependencies, data and security risks, concurrency, operations, verification criteria, scope, and task implementability. The source plan is hash-checked and never overwritten.
+
+Repository-aware mode creates a private immutable snapshot of allowed text files. The Critic can only use the read-only evidence tools `list_tree`, `search`, `read_range`, and `get_metadata`; shell, web search, project rules, and user configuration are disabled for reviewer processes.
+
+### Quick start
+
+Requirements:
+
+- Node.js 20 or newer;
+- an authenticated `codex` CLI with `codex exec`;
+- an explicit model ID in `.plan-mirror.json` or `PLAN_MIRROR_MODEL`.
+
+Install the public marketplace:
+
+```bash
+codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.1
 ```
 
-It supports plan-only and repo-aware review. Repo-aware mode copies allowed regular text files into a private immutable snapshot and exposes only `list_tree`, `search`, `read_range`, and `get_metadata` through a read-only stdio MCP server. Reviewer runs disable shell and web search and ignore user configuration and rules.
+Restart the desktop app, open a new Codex chat, and run `$plan-mirror:doctor`. Then invoke `$plan-mirror:review` and provide the plan path. The skill helps confirm the contract before starting the review.
 
-## Requirements
+Example request:
 
-- Node.js 20 or newer
-- authenticated `codex` CLI with `codex exec`
-- an explicit model ID in config or `PLAN_MIRROR_MODEL`
+```text
+$plan-mirror:review
 
-Copy `config.example.json` to `.plan-mirror.json` in the project being reviewed and replace `explicit-model-id`, or export `PLAN_MIRROR_MODEL`. The controller auto-loads `.plan-mirror.json` from the current workspace.
+Review PLAN.md against my confirmed requirements. Use repository evidence for claims about existing code. Do not modify the source plan.
+```
 
-Add the public marketplace with `codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.0`. For local development, use the absolute repository path instead. The marketplace marks Plan Mirror `INSTALLED_BY_DEFAULT`; restart the desktop app and use a new chat after adding the marketplace or changing the plugin. No normal manual **Install** step is required.
+### Configuration and direct CLI usage
 
-Run preflight:
+Copy `config.example.json` to `.plan-mirror.json` in the project being reviewed and replace `explicit-model-id`, or export `PLAN_MIRROR_MODEL`.
 
 ```bash
 node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs doctor
-```
 
-Run a plan-only review:
+node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs review \
+  --plan PLAN.md \
+  --contract project-contract.json
 
-```bash
-node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs review --plan PLAN.md --contract project-contract.json
-```
-
-Run a repository-aware review:
-
-```bash
 node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs review \
   --plan PLAN.md \
   --contract project-contract.json \
@@ -40,16 +54,69 @@ node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs review \
   --scope src,tests
 ```
 
-Keep the shell working directory at the project being reviewed. This is where `.plan-mirror.json` is discovered and where the default `.plan-mirror/runs/` output is written.
+Keep the shell working directory at the project being reviewed. Final artifacts are written under `.plan-mirror/runs/`: `candidate.md`, `report.md`, and `result.json`.
 
-Artifacts are written under `.plan-mirror/runs/` by default: `candidate.md`, `report.md`, and `result.json`. The original plan is hash-checked after the run and is never written by the controller.
+Possible statuses include `NO_BLOCKERS_FOUND_WITHIN_SCOPE`, `NO_BLOCKERS_FOUND_WITH_NOTES`, `ACTION_REQUIRED`, `DECISION_REQUIRED`, and `INCOMPLETE`. A successful status only means that no blocking findings were found within the confirmed contract, inspected evidence, exclusions, and rubric.
 
-`keep_report=false` keeps only those final artifacts. Set it to `true` to retain the initial Critic response and evidence audit logs under `diagnostics/`; those files can contain project details and should not be committed.
+## Русский
 
-## MVP boundaries
+### Что делает плагин
 
-- exactly one optional Fixer cycle;
-- no panel, strict mode, resume, or automatic candidate application;
-- contract extraction/confirmation is coordinated by the skill before the controller runs;
-- benchmark harness and implementation-verification reviews are later phases;
-- a successful status means only that no blocking findings were found within the recorded contract, snapshot, evidence reads, exclusions, and rubric.
+Plan Mirror проверяет технический план относительно подтверждённого contract проекта. Он находит блокирующие проблемы, при возможности создаёт один полный улучшенный вариант и передаёт его новому независимому Critic.
+
+Проверяются покрытие требований, архитектура, зависимости, риски данных и безопасности, конкурентность, эксплуатация, критерии проверки, границы scope и исполнимость отдельных задач. Исходный план защищён контрольной суммой и никогда не перезаписывается.
+
+В repo-aware режиме создаётся приватный неизменяемый snapshot разрешённых текстовых файлов. Critic получает только read-only инструменты `list_tree`, `search`, `read_range` и `get_metadata`. Shell, интернет, правила проекта и пользовательская конфигурация для reviewer-процессов отключены.
+
+### Быстрый старт
+
+Требования:
+
+- Node.js 20 или новее;
+- авторизованный `codex` CLI с командой `codex exec`;
+- явный ID модели в `.plan-mirror.json` или `PLAN_MIRROR_MODEL`.
+
+Установите публичный marketplace:
+
+```bash
+codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.1
+```
+
+Перезапустите приложение, откройте новый чат Codex и вызовите `$plan-mirror:doctor`. Затем вызовите `$plan-mirror:review` и укажите путь к плану. Skill поможет сначала подтвердить contract.
+
+Пример запроса:
+
+```text
+$plan-mirror:review
+
+Проверь PLAN.md относительно подтверждённых требований. Для утверждений о существующем коде используй evidence из репозитория. Не изменяй исходный план.
+```
+
+### Настройка и прямой запуск
+
+Скопируйте `config.example.json` в `.plan-mirror.json` проверяемого проекта и замените `explicit-model-id` либо задайте `PLAN_MIRROR_MODEL`.
+
+```bash
+node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs doctor
+
+node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs review \
+  --plan PLAN.md \
+  --contract project-contract.json
+
+node /absolute/path/to/plan-mirror/scripts/plan-mirror.mjs review \
+  --plan PLAN.md \
+  --contract project-contract.json \
+  --repo . \
+  --scope src,tests
+```
+
+Запускайте команды из корня проверяемого проекта. Итоговые файлы сохраняются в `.plan-mirror/runs/`: `candidate.md`, `report.md` и `result.json`.
+
+Возможные статусы: `NO_BLOCKERS_FOUND_WITHIN_SCOPE`, `NO_BLOCKERS_FOUND_WITH_NOTES`, `ACTION_REQUIRED`, `DECISION_REQUIRED` и `INCOMPLETE`. Успешный статус означает только отсутствие блокирующих замечаний в пределах подтверждённого contract, прочитанных evidence, исключений и rubric.
+
+## MVP boundaries / Ограничения MVP
+
+- exactly one optional Fixer cycle / не более одного цикла Fixer;
+- no automatic replacement of the source plan / исходный план не заменяется автоматически;
+- no panel, strict mode, or resume / пока нет panel, strict mode и resume;
+- diagnostic evidence logs may contain project details and must not be committed / диагностические evidence-логи могут содержать сведения проекта и не должны публиковаться.

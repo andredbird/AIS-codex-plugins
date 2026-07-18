@@ -1,7 +1,7 @@
 {
   "name": "plan-mirror",
-  "version": "0.1.0+codex.20260718134132",
-  "description": "Blindly review, improve, and re-review technical plans against a confirmed project contract.",
+  "version": "0.1.1+codex.20260718135601",
+  "description": "Review, safely improve, and independently re-check technical plans against confirmed requirements.",
   "author": {
     "name": "Andrey"
   },
@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "Plan Mirror",
     "shortDescription": "Blind technical plan review with one safe revision.",
-    "longDescription": "Reviews a plan against a confirmed contract, optionally verifies an immutable repository snapshot, produces one improved candidate, and runs a fresh blind final review.",
+    "longDescription": "Reviews a plan against a confirmed contract, optionally verifies an immutable repository snapshot, produces one improved candidate, and runs a fresh blind final review. Проверяет технический план, безопасно улучшает его и повторно оценивает независимым Critic.",
     "developerName": "Andrey",
     "category": "Productivity",
     "capabilities": [
@@ -27,7 +27,9 @@
     ],
     "defaultPrompt": [
       "Review PLAN.md against a confirmed contract.",
-      "Check whether Plan Mirror can run safely."
+      "Check whether Plan Mirror can run safely.",
+      "Проверь PLAN.md относительно подтверждённого contract.",
+      "Проверь, готов ли Plan Mirror к безопасному запуску."
     ]
   }
 }
