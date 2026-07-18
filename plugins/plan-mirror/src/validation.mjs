@@ -79,6 +79,9 @@ export function validateCandidate({ fixer, basePlan, basePlanHash = sha256(baseP
   assert(candidate.trim() && candidate !== basePlan, 'Candidate is empty or identical to base plan.');
   for (const id of normativeIds(contract)) assert(candidate.includes(id), `Candidate removed normative ID ${id}.`);
   for (const id of blockerIds) assert(fixer.addresses.includes(id), `Fixer did not address ${id}.`);
-  assert(/^### TASK-\d{3,}/m.test(candidate), 'Candidate must contain stable TASK IDs.');
+  assert(
+    /^### TASK-\d{3,} — \S.+$/m.test(candidate),
+    'Candidate must contain at least one task heading in the exact format "### TASK-001 — Imperative title".'
+  );
   return candidate;
 }

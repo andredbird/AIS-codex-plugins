@@ -6,6 +6,10 @@
   "properties": {
     "base_plan_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "addresses": { "type": "array", "items": { "type": "string", "pattern": "^finding-[0-9]{3,}$" } },
-    "candidate_markdown": { "type": "string", "minLength": 1 }
+    "candidate_markdown": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Complete replacement plan. Every executable task must start with an H3 heading such as: ### TASK-001 — Imperative task title"
+    }
   }
 }

@@ -101,7 +101,15 @@ export async function runWithMalformedRetry(options, validate) {
     return result;
   } catch (firstError) {
     if (!(firstError instanceof MalformedResponseError)) throw firstError;
-    const retry = await runCodex({ ...options, role: `${options.role}-malformed-retry` });
+    const correction = [
+      options.prompt,
+      '',
+      '<malformed_response_correction>',
+      `Your previous response was rejected by local validation: ${firstError.message}`,
+      'Produce the complete structured response again. Correct the stated format problem and preserve every original requirement.',
+      '</malformed_response_correction>'
+    ].join('\n');
+    const retry = await runCodex({ ...options, prompt: correction, role: `${options.role}-malformed-retry` });
     try { validate(retry.value); }
     catch (error) { throw new MalformedResponseError(error.message); }
     return retry;

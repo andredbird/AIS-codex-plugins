@@ -29,7 +29,7 @@ The second Critic does not see the first review. This reduces confirmation bias 
 ### Install
 
 ```bash
-codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.2
+codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.3
 ```
 
 Plan Mirror is marked `INSTALLED_BY_DEFAULT`. Restart the ChatGPT desktop app, open a new Codex chat, and run:
@@ -48,7 +48,7 @@ $plan-mirror:review
 Review PLAN.md. Confirm the project contract with me first and use repository evidence when the plan depends on existing code.
 ```
 
-The review creates `candidate.md`, `report.md`, and `result.json` under `.plan-mirror/runs/`. It never overwrites the source plan.
+The review creates `report.md` and `result.json` under `.plan-mirror/runs/`, plus `candidate.md` when a valid candidate is available. It never overwrites the source plan. If the Fixer returns an invalid TASK format, Plan Mirror gives it one format-correction retry; a second invalid response ends safely as `INCOMPLETE` with a report.
 
 See the [Plan Mirror documentation](plugins/plan-mirror/README.md) for configuration, direct CLI usage, security boundaries, and result statuses.
 
@@ -77,7 +77,7 @@ Plan Mirror проверяет технический план до начала
 ### Установка
 
 ```bash
-codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.2
+codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.3
 ```
 
 Plan Mirror помечен `INSTALLED_BY_DEFAULT`. Перезапустите приложение ChatGPT, откройте новый чат Codex и выполните:
@@ -96,7 +96,7 @@ $plan-mirror:review
 Проверь PLAN.md. Сначала подтверди со мной contract проекта, а если план зависит от существующего кода — используй evidence из репозитория.
 ```
 
-Результаты сохраняются в `.plan-mirror/runs/`: `candidate.md`, `report.md` и `result.json`. Исходный план никогда не перезаписывается.
+В `.plan-mirror/runs/` всегда сохраняются `report.md` и `result.json`, а при наличии корректного варианта — также `candidate.md`. Исходный план никогда не перезаписывается. Если Fixer нарушил формат TASK, Plan Mirror один раз объясняет ошибку и просит исправить только формат; второй неверный ответ безопасно завершает запуск со статусом `INCOMPLETE` и отчётом.
 
 Настройка, прямой запуск из терминала, ограничения безопасности и значения итоговых статусов описаны в [документации Plan Mirror](plugins/plan-mirror/README.md).
 

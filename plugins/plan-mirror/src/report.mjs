@@ -6,7 +6,7 @@ export function renderReport(result) {
     '## Integrity', '',
     `- Contract SHA-256: \`${result.hashes.contract}\``,
     `- Source plan SHA-256: \`${result.hashes.source_plan}\``,
-    `- Candidate SHA-256: \`${result.hashes.candidate}\``,
+    `- Candidate SHA-256: ${result.hashes.candidate ? `\`${result.hashes.candidate}\`` : 'not produced'}`,
     `- Snapshot SHA-256: ${result.hashes.snapshot ? `\`${result.hashes.snapshot}\`` : 'not performed'}`,
     `- Source plan unchanged: ${result.source_plan_unchanged ? 'yes' : 'NO'}`, '',
     '## Scope and isolation', '',

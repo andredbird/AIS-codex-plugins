@@ -1,6 +1,6 @@
 {
   "name": "plan-mirror",
-  "version": "0.1.2+codex.20260718161434",
+  "version": "0.1.3+codex.20260718194007",
   "description": "Review, safely improve, and independently re-check technical plans against confirmed requirements.",
   "author": {
     "name": "Andrey"

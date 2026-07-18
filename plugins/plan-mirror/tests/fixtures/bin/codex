@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2);
 const output = args[args.indexOf('--output-last-message') + 1];
@@ -12,10 +12,20 @@ const risks = [
 let response;
 if (schema.endsWith('fixer-schema.json')) {
   const hash = prompt.match(/Exact base plan SHA-256: ([a-f0-9]{64})/)[1];
+  const mode = process.env.PLAN_MIRROR_FAKE_FIXER_MODE;
+  let invalidTaskFormat = mode === 'missing-task-always';
+  if (mode === 'missing-task-once') {
+    const stateFile = process.env.PLAN_MIRROR_FAKE_STATE_FILE;
+    const priorCalls = stateFile && existsSync(stateFile) ? Number(readFileSync(stateFile, 'utf8')) : 0;
+    invalidTaskFormat = priorCalls === 0;
+    if (stateFile) writeFileSync(stateFile, String(priorCalls + 1));
+  }
   response = {
     base_plan_hash: hash,
     addresses: ['finding-001'],
-    candidate_markdown: '# Candidate\n\nREQ-001\n\n### TASK-001 — Implement safely\n\nRequirements: REQ-001\n\nDepends on: none\n\nFiles/interfaces:\n- src/example.js\n\nImplementation:\n- Implement the requirement.\n\nVerification:\n- npm test\n\nExpected result:\n- Tests pass.\n\nDone when:\n- REQ-001 is verified.\n'
+    candidate_markdown: invalidTaskFormat
+      ? '# Candidate\n\nREQ-001\n\n## Implement safely\n\nVerification: npm test\n'
+      : '# Candidate\n\nREQ-001\n\n### TASK-001 — Implement safely\n\nRequirements: REQ-001\n\nDepends on: none\n\nFiles/interfaces:\n- src/example.js\n\nImplementation:\n- Implement the requirement.\n\nVerification:\n- npm test\n\nExpected result:\n- Tests pass.\n\nDone when:\n- REQ-001 is verified.\n'
   };
 } else {
   const final = prompt.includes('### TASK-001');

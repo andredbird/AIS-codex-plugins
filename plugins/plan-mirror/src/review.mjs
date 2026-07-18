@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { contractEnvelope } from './contract.mjs';
-import { ModelCallBudget, runCodex, runWithMalformedRetry } from './codex-runner.mjs';
+import { ModelCallBudget, runWithMalformedRetry } from './codex-runner.mjs';
 import { renderReport } from './report.mjs';
 import { createSnapshot, SnapshotLimitError } from './snapshot.mjs';
 import { PLUGIN_ROOT, nowId, readJson, sha256, writeJson, assert } from './util.mjs';
@@ -50,6 +50,11 @@ function totalUsage(calls) {
   return totals;
 }
 
+function failureReason(stage, error) {
+  const message = String(error?.message ?? error).split('\n')[0].slice(0, 500);
+  return `${stage}: ${message}`;
+}
+
 export async function runReview({ planFile, contractFile, repo = null, scope = [], outDir = null, config }) {
   const started = performance.now();
   const planPath = path.resolve(planFile);
@@ -71,6 +76,7 @@ export async function runReview({ planFile, contractFile, repo = null, scope = [
   let finalReview = null;
   let assessment = { complete: false, incomplete_reasons: [] };
   let candidate = basePlan;
+  let candidateProduced = true;
   let fixerResult = null;
   let status = 'INCOMPLETE';
   let firstAudit = null;
@@ -111,25 +117,58 @@ export async function runReview({ planFile, contractFile, repo = null, scope = [
 
       const fixable = blockingFindings(firstReview, 'major').filter((finding) => !finding.requires_user_decision);
       if (firstVerdict === 'ACTION_REQUIRED' && fixable.length) {
-        const fixed = await runCodex({
-          role: 'fixer',
-          prompt: fixerPrompt({ instructions: fixerInstructions, contract, plan: basePlan, planHash: sourcePlanHash, blockers: fixable }),
-          schema: path.join(PLUGIN_ROOT, 'schemas', 'fixer-schema.json'), config, budget
-        });
-        validateFixerShape(fixed.value);
-        candidate = validateCandidate({ fixer: fixed.value, basePlan, basePlanHash: sourcePlanHash, contract, config, blockerIds: fixable.map((finding) => finding.id) });
-        fixerResult = { addresses: fixed.value.addresses, base_plan_hash: fixed.value.base_plan_hash };
+        try {
+          let validatedCandidate = null;
+          const fixed = await runWithMalformedRetry({
+            role: 'fixer',
+            prompt: fixerPrompt({ instructions: fixerInstructions, contract, plan: basePlan, planHash: sourcePlanHash, blockers: fixable }),
+            schema: path.join(PLUGIN_ROOT, 'schemas', 'fixer-schema.json'), config, budget
+          }, (value) => {
+            validateFixerShape(value);
+            validatedCandidate = validateCandidate({
+              fixer: value, basePlan, basePlanHash: sourcePlanHash, contract, config,
+              blockerIds: fixable.map((finding) => finding.id)
+            });
+          });
+          candidate = validatedCandidate;
+          fixerResult = { addresses: fixed.value.addresses, base_plan_hash: fixed.value.base_plan_hash };
+        } catch (error) {
+          candidateProduced = false;
+          status = 'INCOMPLETE';
+          finalReview = partialReview('Fixer output was rejected; no blind final review was performed.');
+          assessment = {
+            complete: false,
+            incomplete_reasons: [...new Set([
+              ...(firstAssessment.incomplete_reasons ?? []),
+              failureReason('Fixer did not produce a valid candidate', error)
+            ])]
+          };
+        }
 
-        finalAudit = repo ? path.join(tempRoot, 'critic-2-audit.jsonl') : null;
-        const blind = await runWithMalformedRetry({
-          role: 'critic-2',
-          prompt: criticPrompt({ critic, rubric, contract, plan: candidate, repoAware: Boolean(repo) }),
-          schema: path.join(PLUGIN_ROOT, 'schemas', 'review-schema.json'), config, budget,
-          snapshot: snapshotPath, audit: finalAudit
-        }, validateReviewShape);
-        finalReview = blind.value;
-        assessment = await assessReview({ review: finalReview, contract, repoAware: Boolean(repo), audit: finalAudit });
-        status = computeVerdict({ review: finalReview, assessment, threshold: config.blocking_threshold });
+        if (fixerResult) {
+          try {
+            finalAudit = repo ? path.join(tempRoot, 'critic-2-audit.jsonl') : null;
+            const blind = await runWithMalformedRetry({
+              role: 'critic-2',
+              prompt: criticPrompt({ critic, rubric, contract, plan: candidate, repoAware: Boolean(repo) }),
+              schema: path.join(PLUGIN_ROOT, 'schemas', 'review-schema.json'), config, budget,
+              snapshot: snapshotPath, audit: finalAudit
+            }, validateReviewShape);
+            finalReview = blind.value;
+            assessment = await assessReview({ review: finalReview, contract, repoAware: Boolean(repo), audit: finalAudit });
+            status = computeVerdict({ review: finalReview, assessment, threshold: config.blocking_threshold });
+          } catch (error) {
+            status = 'INCOMPLETE';
+            finalReview = partialReview('The candidate was produced, but the blind final review did not complete.');
+            assessment = {
+              complete: false,
+              incomplete_reasons: [...new Set([
+                ...(assessment.incomplete_reasons ?? []),
+                failureReason('Blind final review did not complete', error)
+              ])]
+            };
+          }
+        }
       }
     }
 
@@ -144,9 +183,10 @@ export async function runReview({ planFile, contractFile, repo = null, scope = [
       schema_version: 1,
       status,
       repository_verification: repo ? 'performed_on_immutable_snapshot' : 'not_performed',
-      hashes: { contract: contractHash, source_plan: sourcePlanHash, candidate: sha256(candidate), snapshot: snapshot?.root_hash ?? null },
+      hashes: { contract: contractHash, source_plan: sourcePlanHash, candidate: candidateProduced ? sha256(candidate) : null, snapshot: snapshot?.root_hash ?? null },
       contract_revision: contract.revision,
       source_plan_unchanged: sourcePlanUnchanged,
+      candidate_produced: candidateProduced,
       initial_blockers: firstReview ? blockingFindings(firstReview, 'major') : [],
       fixer: fixerResult,
       final_review: finalReview ?? partialReview('Review did not complete.'),
@@ -169,7 +209,7 @@ export async function runReview({ planFile, contractFile, repo = null, scope = [
       },
       diagnostics_retained: Boolean(config.keep_report)
     };
-    await writeFile(path.join(outputRoot, 'candidate.md'), candidate, { encoding: 'utf8', mode: 0o600 });
+    if (candidateProduced) await writeFile(path.join(outputRoot, 'candidate.md'), candidate, { encoding: 'utf8', mode: 0o600 });
     await writeJson(path.join(outputRoot, 'result.json'), result);
     await writeFile(path.join(outputRoot, 'report.md'), renderReport(result), { encoding: 'utf8', mode: 0o600 });
     if (config.keep_report) {
