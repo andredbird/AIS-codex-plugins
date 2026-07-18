@@ -3,10 +3,11 @@ import path from 'node:path';
 import { DEFAULT_CONFIG, loadConfig } from '../src/config.mjs';
 import { runDoctor } from '../src/doctor.mjs';
 import { runReview } from '../src/review.mjs';
+import { setupWorkspace } from '../src/setup.mjs';
 import { parseArgs } from '../src/util.mjs';
 
 function usage() {
-  return `Plan Mirror Practical\n\nUsage:\n  plan-mirror.mjs doctor [--config FILE] [--json] [--live]\n  plan-mirror.mjs review --plan FILE --contract FILE [--repo DIR] [--scope a,b] [--config FILE] [--out DIR]\n`;
+  return `Plan Mirror Practical\n\nUsage:\n  plan-mirror.mjs doctor [--config FILE] [--json] [--live]\n  plan-mirror.mjs setup --model MODEL [--json]\n  plan-mirror.mjs review --plan FILE --contract FILE [--repo DIR] [--scope a,b] [--config FILE] [--out DIR]\n`;
 }
 
 const [command, ...rest] = process.argv.slice(2);
@@ -25,6 +26,17 @@ try {
       process.stdout.write(`\n${report.ok ? 'Plan Mirror is ready.' : 'Plan Mirror is not ready.'}\n`);
     }
     process.exitCode = report.ok ? 0 : 2;
+  } else if (command === 'setup') {
+    if (!args.model || typeof args.model !== 'string') throw new Error('setup requires --model MODEL');
+    const result = await setupWorkspace({ model: args.model });
+    if (args.json) process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    else {
+      process.stdout.write(`Project setup complete for ${result.model}.\n`);
+      process.stdout.write(`${result.config.action.toUpperCase()} .plan-mirror.json\n`);
+      process.stdout.write(`${result.gitignore.action.toUpperCase()} .gitignore`);
+      if (result.gitignore.added.length) process.stdout.write(` (${result.gitignore.added.join(', ')})`);
+      process.stdout.write('\n');
+    }
   } else if (command === 'review') {
     if (!args.plan || !args.contract) throw new Error('review requires --plan and --contract');
     const config = await loadConfig(args.config);

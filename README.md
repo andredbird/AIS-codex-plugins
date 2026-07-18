@@ -29,7 +29,7 @@ The second Critic does not see the first review. This reduces confirmation bias 
 ### Install
 
 ```bash
-codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.1
+codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.2
 ```
 
 Plan Mirror is marked `INSTALLED_BY_DEFAULT`. Restart the ChatGPT desktop app, open a new Codex chat, and run:
@@ -37,6 +37,8 @@ Plan Mirror is marked `INSTALLED_BY_DEFAULT`. Restart the ChatGPT desktop app, o
 ```text
 $plan-mirror:doctor
 ```
+
+On first use, Doctor detects a missing project model, shows the exact proposed `.plan-mirror.json` and `.gitignore` changes, and asks once for confirmation. After approval it applies only the missing settings and reruns the checks. Existing model choices are never replaced automatically.
 
 Then review a plan:
 
@@ -75,7 +77,7 @@ Plan Mirror проверяет технический план до начала
 ### Установка
 
 ```bash
-codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.1
+codex plugin marketplace add andredbird/AIS-codex-plugins --ref v0.1.2
 ```
 
 Plan Mirror помечен `INSTALLED_BY_DEFAULT`. Перезапустите приложение ChatGPT, откройте новый чат Codex и выполните:
@@ -83,6 +85,8 @@ Plan Mirror помечен `INSTALLED_BY_DEFAULT`. Перезапустите п
 ```text
 $plan-mirror:doctor
 ```
+
+При первом запуске Doctor обнаружит отсутствие модели проекта, покажет точные изменения `.plan-mirror.json` и `.gitignore` и один раз запросит разрешение. После подтверждения он добавит только недостающие настройки и повторит проверки. Существующий выбор модели автоматически не заменяется.
 
 Затем запустите проверку плана:
 

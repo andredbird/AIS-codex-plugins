@@ -1,4 +1,4 @@
 interface:
   display_name: "Plan Mirror Doctor"
-  short_description: "Check Plan Mirror runtime and safety prerequisites"
-  default_prompt: "Use $plan-mirror:doctor to check whether Plan Mirror can run safely."
+  short_description: "Check and safely initialize Plan Mirror"
+  default_prompt: "Use $plan-mirror:doctor to check Plan Mirror and request permission before creating missing project settings."
